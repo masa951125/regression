@@ -1,0 +1,6 @@
+library(tidyverse)
+library(HistData)
+install.packages("HistData")
+data("Galton")
+install.packages("Galton")
+library(dslabs)
