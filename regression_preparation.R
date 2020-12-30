@@ -1,7 +1,8 @@
 #chapter17 1-2
-
+library(dplyr)
 library(tidyverse)
 library(HistData)
+library(ggplot2)
 install.packages("HistData")
 data("GaltonFamilies")
 head(GaltonFamilies)
@@ -48,3 +49,25 @@ ggplot(aes(sample=R), data= data.frame(R)) +
   geom_abline(intercept = mean(R), 
               slope = sqrt((1-mean(R)^2)/(N-2)))
 
+#conditional expectations
+
+conditional_avg <- galton_heights %>% 
+  filter(round(father) == 72) %>%
+  summarize(avg = mean(son)) %>% 
+  pull(avg)
+conditional_avg
+
+sd(galton_heights$son)
+
+galton_heights %>% mutate(father_strata = factor(round(father))) %>% 
+  ggplot(aes(father_strata, son)) + 
+  geom_boxplot() + 
+  geom_point()
+
+
+galton_heights %>%
+  mutate(father_strata = factor(round(father))) %>%
+  group_by(father_strata) %>%
+  summarize(father_strata, avg =mean(son))%>%
+  ggplot(aes(father_strata, avg)) +
+  geom_point()
