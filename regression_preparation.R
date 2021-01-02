@@ -71,3 +71,101 @@ galton_heights %>%
   summarize(father_strata, avg =mean(son))%>%
   ggplot(aes(father_strata, avg)) +
   geom_point()
+
+scale(galton_heights$father)
+
+mu_x <- mean(galton_heights$father)
+mu_y <- mean(galton_heights$son)
+
+s_x <- sd(galton_heights$father)
+s_y <- sd(galton_heights$son)
+
+r <- cor(galton_heights$father,galton_heights$son)
+
+galton_heights %>% 
+  ggplot(aes(father,son))+
+  geom_point(alpha=0.5)+
+  geom_abline(slope =r*s_y/s_x, intercept = mu_y-r*(s_y/s_x) *mu_x)
+
+galton_heights %>% 
+  ggplot(aes(scale(father),scale(son)))+
+  geom_point(alpha=0.5)+
+  geom_abline(slope =r, intercept = 0)
+
+#Comparing two methods 1.conditional average 2. regression line
+set.seed(1983)
+B <- 1000
+N <- 50
+conditional_avg <- replicate(B, {
+  dat <- sample_n(galton_heights, N)
+  dat %>% filter(round(father) == 72) %>% 
+    summarize(avg = mean(son)) %>% 
+    pull(avg)
+})
+
+regression_prediction <- replicate(B, {
+  dat <- sample_n(galton_heights, N)
+  mu_x <- mean(dat$father)
+  mu_y <- mean(dat$son)
+  s_x <- sd(dat$father)
+  s_y <- sd(dat$son)
+  r <- cor(dat$father, dat$son)
+  mu_y + r*(72 - mu_x)/s_x*s_y
+})
+
+mean(conditional_avg, na.rm = T)
+mean(regression_prediction)
+
+sd(conditional_avg, na.rm = T)
+sd(regression_prediction)
+
+galton_heights %>%
+  mutate(z_father = round((father - mean(father)) / sd(father))) %>%
+  filter(z_father %in% -2:2) %>%
+  ggplot() +  
+  stat_qq(aes(sample = son)) +
+  facet_wrap( ~ z_father) 
+
+z_father <- galton_heights %>% round(father - mean(father)) / sd(father)
+galton_heights %>% mean(father)
+mean(galton_heights$father)
+
+z_father <- round(galton_heights$father - mean(galton_heights$father) / sd(galton_heights$father))
+hist(z_father, breaks =20)
+
+m_1 <-  r * s_y / s_x
+b_1 <- mu_y - m_1*mu_x
+
+m_2 <-  r * s_x / s_y
+b_2 <- mu_x - m_2 * mu_y
+
+galton_heights %>% 
+  ggplot(aes(father, son)) + 
+  geom_point(alpha = 0.5) + 
+  geom_abline(intercept = b_1, slope = m_1, col = "blue") +
+  geom_abline(intercept = -b_2/m_2, slope = 1/m_2, col = "red") 
+
+#1. Load the GaltonFamilies data from the HistData. 
+#The children in each family are listed by gender and then by height. 
+#Create a dataset called galton_heights 
+#by picking a male and female at random.
+
+names(GaltonFamilies)
+
+galton_heights <- GaltonFamilies %>%
+ mutate(son= gender="male", daughter= gender="female")
+  select(father,mother, ChildHeight) %>%
+  rename(son = childHeight)
+
+
+galton_heights %>% ggplot(aes())
+
+#2. Make a scatterplot for heights 
+#between mothers and daughters, 
+#mothers and sons, 
+#fathers and daughters, 
+#and fathers and sons.
+
+galton_heights %>% ggplot(aes(mother, ))
+
+#3. Compute the correlation in heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons.
