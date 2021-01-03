@@ -165,10 +165,12 @@ galton_heights <- GaltonFamilies %>%
 
 galton_heights_m_d <- galton_heights%>%
   filter(gender == "female") %>%
+  group_by(family)%>%
+  sample_n(1)%>%
   select(mother, childHeight) %>%
   rename(daughter = childHeight)
 
-galton_heights_m_d %>%
+m_d <- galton_heights_m_d %>%
   ggplot(aes(mother, daughter))+geom_point(alpha=0.5)
 
 galton_heights_m_s <- galton_heights%>%
@@ -176,7 +178,10 @@ galton_heights_m_s <- galton_heights%>%
   select(mother,childHeight) %>%
   rename(son = childHeight)
 
-galton_heights_m_s %>%
+
+
+
+m_s <- galton_heights_m_s %>%
   ggplot(aes(mother, son))+geom_point(alpha=0.5)
 
 galton_heights_f_d <- galton_heights%>%
@@ -184,7 +189,7 @@ galton_heights_f_d <- galton_heights%>%
   select(father,childHeight) %>%
   rename(daughter = childHeight)
 
-galton_heights_f_d %>%
+f_d <-galton_heights_f_d %>%
   ggplot(aes(father, daughter))+geom_point(alpha=0.5)
 
 galton_heights_f_s <- galton_heights%>%
@@ -192,7 +197,7 @@ galton_heights_f_s <- galton_heights%>%
   select(father,childHeight) %>%
   rename(son = childHeight)
 
-galton_heights_f_s %>%
+f_s <-galton_heights_f_s %>%
   ggplot(aes(father, son))+geom_point(alpha=0.5)
 
 #3. Compute the correlation in heights 
@@ -218,4 +223,23 @@ lm(data=galton_heights_m_s, mother~son)
 lm(data=galton_heights_f_s, father~son)
 lm(data=galton_heights_f_d, father~daughter)
 
+library(gridExtra)
+grid.arrange(m_d, m_s, f_d, f_s, ncol=2)
+m_d
 
+galton_heights%>%
+  filter(gender=="male") %>%
+  select(father,childHeight) %>%
+  rename(son = childHeight)
+
+set.seed(1989, sample.kind="Rounding")
+
+female_heights <- GaltonFamilies%>%     
+  filter(gender == "female") %>%     
+  group_by(family) %>%     
+  sample_n(1) %>%     
+  ungroup() %>%     
+  select(mother, childHeight) %>%     
+  rename(daughter = childHeight)
+
+set.seed(NULL)
