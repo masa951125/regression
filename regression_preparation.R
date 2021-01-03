@@ -153,19 +153,69 @@ galton_heights %>%
 names(GaltonFamilies)
 
 galton_heights <- GaltonFamilies %>%
- mutate(son= gender="male", daughter= gender="female")
-  select(father,mother, ChildHeight) %>%
-  rename(son = childHeight)
-
-
-galton_heights %>% ggplot(aes())
-
+  group_by(family)%>%
+  sample_n(1) %>%
+  ungroup()
+ 
 #2. Make a scatterplot for heights 
 #between mothers and daughters, 
 #mothers and sons, 
 #fathers and daughters, 
 #and fathers and sons.
 
-galton_heights %>% ggplot(aes(mother, ))
+galton_heights_m_d <- galton_heights%>%
+  filter(gender == "female") %>%
+  select(mother, childHeight) %>%
+  rename(daughter = childHeight)
 
-#3. Compute the correlation in heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons.
+galton_heights_m_d %>%
+  ggplot(aes(mother, daughter))+geom_point(alpha=0.5)
+
+galton_heights_m_s <- galton_heights%>%
+  filter(gender=="male") %>%
+  select(mother,childHeight) %>%
+  rename(son = childHeight)
+
+galton_heights_m_s %>%
+  ggplot(aes(mother, son))+geom_point(alpha=0.5)
+
+galton_heights_f_d <- galton_heights%>%
+  filter(gender=="female") %>%
+  select(father,childHeight) %>%
+  rename(daughter = childHeight)
+
+galton_heights_f_d %>%
+  ggplot(aes(father, daughter))+geom_point(alpha=0.5)
+
+galton_heights_f_s <- galton_heights%>%
+  filter(gender=="male") %>%
+  select(father,childHeight) %>%
+  rename(son = childHeight)
+
+galton_heights_f_s %>%
+  ggplot(aes(father, son))+geom_point(alpha=0.5)
+
+#3. Compute the correlation in heights 
+#between mothers and daughters, 
+#mothers and sons, 
+#fathers and daughters, 
+#and fathers and sons.
+
+mu_x_md <- mean(galton_heights_m_d$mother)
+mu_y_md <- mean(galton_heights_m_d$daughter)
+s_x_md <- sd(galton_heights_m_d$mother)
+s_y_md <- sd(galton_heights_m_d$daughter)
+r_md <- cor(galton_heights_m_d$mother, galton_heights_m_d$daughter)
+
+galton_heights_m_d %>% 
+  ggplot(aes(mother, daughter)) + 
+  geom_point(alpha = 0.5) +
+  geom_abline(slope = r_md * s_y_md/s_x_md, 
+              intercept = mu_y_md - r_md * s_y_md/s_x_md * mu_x_md) 
+
+lm(data=galton_heights_m_d, mother~daughter)
+lm(data=galton_heights_m_s, mother~son)
+lm(data=galton_heights_f_s, father~son)
+lm(data=galton_heights_f_d, father~daughter)
+
+
