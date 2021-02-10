@@ -167,3 +167,29 @@ galton_heights %>%
   geom_point(alpha = 0.5) +
   geom_abline(intercept = b_2, slope = m_2)
 
+#Assessment
+set.seed(1989, sample.kind="Rounding") 
+library(HistData)
+data("GaltonFamilies")
+
+female_heights <- GaltonFamilies%>%     
+  filter(gender == "female") %>%     
+  group_by(family) %>%     
+  sample_n(1) %>%     
+  ungroup() %>%     
+  select(mother, childHeight) %>%     
+  rename(daughter = childHeight)
+
+m_m <-mean(female_heights$mother)
+sd_m <- sd(female_heights$mother)
+m_d <- mean(female_heights$daughter)
+sd_d <-sd(female_heights$daughter)
+r <- cor(female_heights$mother,female_heights$daughter)
+
+
+m <- r* sd_d/sd_m
+b <- m_d - m_m*m
+sqrt(1-r^2)
+r^2
+
+60*m +b
