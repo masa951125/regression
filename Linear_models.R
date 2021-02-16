@@ -243,5 +243,22 @@ player_groups <- bat_99_01 %>%
   group_by(playerID) %>%
   summarize(mean_singles =mean(singles), mean_bb =mean(bb))
 
-sum(player_groups$mean_singles >0.2)
+
 sum(player_groups$mean_bb >0.2)
+
+combined_data <-inner_join(player_groups,bat_02)
+sum(player_groups$mean_singles >0.2)
+cor(combined_data$singles, combined_data$mean_singles)
+cor(combined_data$bb, combined_data$mean_bb)
+
+ggplot(data=combined_data) +
+  geom_point(aes(mean_singles, singles), col="red") 
+
+ggplot(data=combined_data) +
+    geom_point(aes(mean_bb, bb), col="blue")
+
+singles <- lm(singles~ mean_singles, data=combined_data)
+summary(singles)
+
+bb <- lm(bb~ mean_bb,data=combined_data)
+summary(bb)
