@@ -199,6 +199,49 @@ ggplot(data, aes(x = father, y = fit)) +
   geom_ribbon(aes(ymin=lwr, ymax=upr), alpha=0.2) + 
   geom_point(data = galton_heights, aes(x = father, y = son))
 
+set.seed(1989, sample.kind="Rounding")
+library(HistData)
+data("GaltonFamilies")
+options(digits = 3) 
 
+female_heights <- GaltonFamilies %>%     
+  filter(gender == "female") %>%     
+  group_by(family) %>%     
+  sample_n(1) %>%     
+  ungroup() %>%     
+  select(mother, childHeight) %>%     
+  rename(daughter = childHeight)
 
+predicted_mother_heights <- female_heights %>%
+  lm(mother~ daughter, data = .)
+summary(predicted_mother_heights)
 
+female_heights[1,]
+44.1 + 0.31*69
+
+library(Lahman)
+bat_02 <- Batting %>% filter(yearID == 2002) %>%
+  mutate(pa = AB + BB, singles = (H - X2B - X3B - HR)/pa, bb = BB/pa) %>%
+  filter(pa >= 100) %>%
+  select(playerID, singles, bb)
+
+bat_99_01 <- Batting %>% filter(yearID %in% 1999:2001) %>%
+  mutate(pa = AB + BB, singles = (H - X2B - X3B - HR)/pa, bb = BB/pa) %>%
+  filter(pa >= 100) %>%
+  select(playerID, singles, bb)
+
+mean_singles <- mean(bat_99_01$singles)
+mean_bb <-mean(bat_99_01$bb)
+ncol(bat_99_01$singles > 0.2)
+ncol(bat_99_01$bb >0.2)
+
+class(bat_99_01)
+sum(bat_99_01$singles>0.2)
+sum(bat_99_01$bb >0.2)
+
+player_groups <- bat_99_01 %>% 
+  group_by(playerID) %>%
+  summarize(mean_singles =mean(singles), mean_bb =mean(bb))
+
+sum(player_groups$mean_singles >0.2)
+sum(player_groups$mean_bb >0.2)
