@@ -347,3 +347,77 @@ dat %>%
 
 glance(fit)
 augment(fit)
+
+?do
+
+get_slope <- function(data) {
+  fit <- lm(R ~ BB, data = data)
+  sum.fit <- summary(fit)
+  data.frame(slope = sum.fit$coefficients[2, "Estimate"], 
+           se = sum.fit$coefficients[2, "Std. Error"],
+           pvalue = sum.fit$coefficients[2, "Pr(>|t|)"])
+}
+
+dat %>%
+  group_by(HR) %>%
+  do(get_slope(.))
+
+dat <- Teams %>% filter(yearID %in% 1961:2001) %>%
+  mutate(HR = HR/G,
+         R = R/G) %>%
+  select(lgID, HR, BB, R) 
+
+names(dat)
+
+dat %>%
+  group_by(lgID) %>%
+  do(tidy(lm(R~HR, data=.), conf.int=T))%>%
+  filter(term=="HR")
+
+library(HistData)
+data("GaltonFamilies")
+set.seed(1, sample.kind = "Rounding")
+
+galton <- GaltonFamilies %>%
+  group_by(family, gender) %>%
+  sample_n(1) %>%
+  ungroup() %>% 
+  gather(parent, parentHeight, father:mother) %>%
+  mutate(child = ifelse(gender == "female", "daughter", "son")) %>%
+  unite(pair, c("parent", "child"))
+
+
+sum(galton$pair=="father_daughter") 
+sum(galton$pair=="mother_son")
+
+galton %>%
+  group_by(pair) %>%
+  summarize(n = n())
+
+galton %>%
+  group_by(pair) %>%
+  summarize(r = cor(childHeight, parentHeight)) 
+
+galton %>%
+  group_by(pair) %>%
+  do(tidy(lm(childHeight~parentHeight, data = .), conf.int=T)) %>%
+  filter(term== "parentHeight")%>%
+  summarize(std.error)
+
+galton %>%
+  group_by(pair) %>%
+  do(tidy(lm(childHeight~parentHeight, data = .), conf.int=T)) %>%
+  filter(term== "parentHeight")%>%
+  select(pair, estimate, conf.low, conf.high) %>%
+  ggplot(aes(pair, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_errorbar() +
+  geom_point()
+
+galton %>%
+  group_by(pair) %>%
+  do(tidy(lm(parentHeight~childHeight, data = .), conf.int=T)) %>%
+  filter(term== "childHeight")%>%
+  select(pair, estimate, conf.low, conf.high) %>%
+  ggplot(aes(pair, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_errorbar() +
+  geom_point()
